@@ -100,6 +100,9 @@ class ColorPickState extends State<ColorPickView> {
             currentColor =
                 getColorAtPoint(e.globalPosition.dx, e.globalPosition.dy);
             currentOffset = e.globalPosition;
+            if (widget.selectColorCallBack != null) {
+              widget.selectColorCallBack(currentColor);
+            }
           }
         });
       },
