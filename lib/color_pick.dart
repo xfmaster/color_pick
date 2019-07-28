@@ -32,19 +32,10 @@ class ColorPickState extends State<ColorPickView> {
   Color currentColor = Color(0xff00ff);
   Offset currentOffset;
   Offset topLeftPosition;
+  Offset selectPosition;
   Size screenSize;
   GlobalKey globalKey = new GlobalKey();
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    Future.delayed(new Duration(seconds: 1)).then((val) {
-      setState(() {
-        if (widget.selectColor != null) _setColor(widget.selectColor);
-        print('ewrarererwew');
-      });
-    });
-  }
+  bool isTap = false;
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +51,8 @@ class ColorPickState extends State<ColorPickView> {
         '控件宽度太宽');
     radius = widget.size.width / 2 - widget.padding;
     currentOffset ??= Offset(radius, radius);
+    if (widget.selectColor != null && selectPosition == null)
+      _setColor(widget.selectColor);
     _initLeftTop();
     return GestureDetector(
       key: globalKey,
@@ -74,10 +67,14 @@ class ColorPickState extends State<ColorPickView> {
               size: widget.size,
             ),
             Positioned(
-              left: currentOffset.dx -
-                  (topLeftPosition == null ? 0 : (topLeftPosition.dx)),
-              top: currentOffset.dy -
-                  (topLeftPosition == null ? 0 : (topLeftPosition.dy)),
+              left: isTap
+                  ? currentOffset.dx -
+                      (topLeftPosition == null ? 0 : (topLeftPosition.dx))
+                  : selectPosition.dx,
+              top: isTap
+                  ? currentOffset.dy -
+                      (topLeftPosition == null ? 0 : (topLeftPosition.dy))
+                  : selectPosition.dy,
               //这里减去80，是因为上下边距各40 所以需要减去还有半径
               child: Container(
                 width: widget.selectRadius,
@@ -97,6 +94,7 @@ class ColorPickState extends State<ColorPickView> {
       ),
       onTapDown: (e) {
         setState(() {
+          isTap = true;
           _initLeftTop();
           if (!isOutSide(e.globalPosition.dx, e.globalPosition.dy)) {
             currentColor =
@@ -106,6 +104,7 @@ class ColorPickState extends State<ColorPickView> {
         });
       },
       onPanUpdate: (e) {
+        isTap = true;
         _initLeftTop();
         setState(() {
           if (!isOutSide(e.globalPosition.dx, e.globalPosition.dy)) {
@@ -147,9 +146,11 @@ class ColorPickState extends State<ColorPickView> {
   }
 
   void _setColor(Color color) {
-    _initLeftTop();
+    print("setColor=$color");
     //设置颜色值
     var hsvColor = HSVColor.fromColor(color);
+
+    print("setColor=$hsvColor");
     double r = hsvColor.saturation * radius;
     double radian = hsvColor.hue / -180.0 * pi;
     _updateSelector(r * cos(radian), -r * sin(radian));
@@ -164,8 +165,8 @@ class ColorPickState extends State<ColorPickView> {
       x *= radius / r;
       y *= radius / r;
     }
-    currentOffset = new Offset(x + topLeftPosition.dx + radius + widget.padding,
-        y + topLeftPosition.dy + radius + widget.padding);
+    selectPosition =
+        new Offset(x + radius + widget.padding, y + radius + widget.padding);
   }
 
   Color getColorAtPoint(double eventX, double eventY) {

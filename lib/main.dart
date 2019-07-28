@@ -37,6 +37,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  Color currentColor = Color(0xff0000ff);
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -51,11 +58,24 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: ColorPickView(
-        selectColor: Color(0xff55ffff),
-        selectColorCallBack: (color) {
-          print(color);
-        },
+      body: Column(
+        children: <Widget>[
+          ColorPickView(
+            selectColor: Color(0xff0000ff),
+            selectColorCallBack: (color) {
+              print(color);
+              setState(() {
+                currentColor = color;
+              });
+            },
+          ),
+          Container(
+            color: currentColor,
+            height: 100,
+            width: 100,
+            child: SizedBox(),
+          )
+        ],
       ),
     );
   }
