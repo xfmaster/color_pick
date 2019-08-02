@@ -4,19 +4,21 @@ import 'dart:math';
 
 typedef SelectColor = Color Function(Color color);
 
-class ColorPickView extends StatefulWidget {
+class ColorRingPickView extends StatefulWidget {
   Size size;
   double selectRadius;
   double padding;
+  final double ringWidth = 20;
   Color selectColor;
   final SelectColor selectColorCallBack;
 
-  ColorPickView(
-      {this.size,
-      this.selectColorCallBack,
-      this.selectRadius,
-      this.padding,
-      this.selectColor}) {
+  ColorRingPickView({
+    this.size,
+    this.selectColorCallBack,
+    this.selectRadius,
+    this.padding,
+    this.selectColor,
+  }) {
     assert(size == null || (size != null && size.height == size.width),
         '控件宽高必须相等');
   }
@@ -27,7 +29,7 @@ class ColorPickView extends StatefulWidget {
   }
 }
 
-class ColorPickState extends State<ColorPickView> {
+class ColorPickState extends State<ColorRingPickView> {
   double radius;
   Color currentColor = Color(0xff00ff);
   Offset currentOffset;
@@ -41,7 +43,7 @@ class ColorPickState extends State<ColorPickView> {
   Widget build(BuildContext context) {
     screenSize ??= MediaQuery.of(context).size;
     widget.size ??= screenSize;
-    widget.selectRadius ??= 10;
+    widget.selectRadius ??= 20;
     widget.padding ??= 40;
     print("screenSize=$screenSize");
     print(widget.size);
@@ -63,18 +65,18 @@ class ColorPickState extends State<ColorPickView> {
           alignment: Alignment.center,
           children: <Widget>[
             CustomPaint(
-              painter: ColorPick(radius: radius),
+              painter: ColorPick(radius: radius, ringWidth: widget.ringWidth),
               size: widget.size,
             ),
             Positioned(
               left: isTap
                   ? currentOffset.dx -
                       (topLeftPosition == null ? 0 : (topLeftPosition.dx))
-                  : (selectPosition == null ? radius : selectPosition.dx),
+                  : selectPosition.dx,
               top: isTap
                   ? currentOffset.dy -
                       (topLeftPosition == null ? 0 : (topLeftPosition.dy))
-                  : (selectPosition == null ? radius : selectPosition.dy),
+                  : selectPosition.dy,
               //这里减去80，是因为上下边距各40 所以需要减去还有半径
               child: Container(
                 width: widget.selectRadius,
@@ -96,28 +98,24 @@ class ColorPickState extends State<ColorPickView> {
         setState(() {
           isTap = true;
           _initLeftTop();
-          if (!isOutSide(e.globalPosition.dx, e.globalPosition.dy)) {
             currentColor =
                 getColorAtPoint(e.globalPosition.dx, e.globalPosition.dy);
             currentOffset = e.globalPosition;
             if (widget.selectColorCallBack != null) {
               widget.selectColorCallBack(currentColor);
             }
-          }
         });
       },
       onPanUpdate: (e) {
         isTap = true;
         _initLeftTop();
         setState(() {
-          if (!isOutSide(e.globalPosition.dx, e.globalPosition.dy)) {
             currentOffset = e.globalPosition;
             currentColor =
                 getColorAtPoint(e.globalPosition.dx, e.globalPosition.dy);
             if (widget.selectColorCallBack != null) {
               widget.selectColorCallBack(currentColor);
             }
-          }
         });
       },
     );
@@ -133,15 +131,9 @@ class ColorPickState extends State<ColorPickView> {
 
   bool isOutSide(double eventX, double eventY) {
     double x = eventX -
-        (topLeftPosition.dx +
-            radius +
-            widget.padding -
-            widget.selectRadius / 2);
+        (topLeftPosition.dx + radius + widget.padding - widget.ringWidth / 2);
     double y = eventY -
-        (topLeftPosition.dy +
-            radius +
-            widget.padding -
-            widget.selectRadius / 2);
+        (topLeftPosition.dy + radius + widget.padding - widget.ringWidth / 2);
     double r = sqrt(x * x + y * y);
     print('r=$r--------------radius=$radius');
     if (r >= radius) return true;
@@ -164,7 +156,7 @@ class ColorPickState extends State<ColorPickView> {
     //更新选中颜色值
     double r = sqrt(eventX * eventX + eventY * eventY);
     double x = eventX, y = eventY;
-    if (r > radius) {
+    if (r > radius - widget.ringWidth && r < radius + widget.ringWidth) {
       x *= radius / r;
       y *= radius / r;
     }
@@ -191,15 +183,18 @@ class ColorPick extends CustomPainter {
   final List<Color> mStatColors = new List();
   SweepGradient hueShader;
   final radius;
+  final ringWidth;
   RadialGradient saturationShader;
 
-  ColorPick({this.radius}) {
+  ColorPick({this.radius, this.ringWidth}) {
     _init();
   }
 
   void _init() {
     //{Color.RED, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA, Color.RED}
     mPaint = new Paint();
+    mPaint.strokeWidth = ringWidth;
+    mPaint.style = PaintingStyle.stroke;
     saturationPaint = new Paint();
     mCircleColors.add(Color.fromARGB(255, 255, 0, 0));
     mCircleColors.add(Color.fromARGB(255, 255, 255, 0));
@@ -223,8 +218,6 @@ class ColorPick extends CustomPainter {
     // 注意这一句
     canvas.clipRect(rect);
     canvas.drawCircle(Offset(size.width / 2, size.height / 2), radius, mPaint);
-    canvas.drawCircle(
-        Offset(size.width / 2, size.height / 2), radius, saturationPaint);
   }
 
   @override

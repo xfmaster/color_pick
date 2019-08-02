@@ -1,3 +1,4 @@
+import 'package:color_pick/ring_color_pick.dart';
 import 'package:flutter/material.dart';
 
 import 'color_pick.dart';
@@ -61,7 +62,6 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Column(
         children: <Widget>[
           ColorPickView(
-            selectColor: Color(0xff0000ff),
             selectColorCallBack: (color) {
               print(color);
               setState(() {
@@ -69,10 +69,14 @@ class _MyHomePageState extends State<MyHomePage> {
               });
             },
           ),
+          ColorRingPickView(
+            selectColor: Color(0xff0000ff),
+            size: Size(200, 200),
+          ),
           Container(
             color: currentColor,
-            height: 100,
-            width: 100,
+            height: 50,
+            width: 50,
             child: SizedBox(),
           )
         ],
