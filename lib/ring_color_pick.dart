@@ -69,14 +69,8 @@ class ColorPickState extends State<ColorRingPickView> {
               size: widget.size,
             ),
             Positioned(
-              left: isTap
-                  ? currentOffset.dx -
-                      (topLeftPosition == null ? 0 : (topLeftPosition.dx))
-                  : selectPosition.dx,
-              top: isTap
-                  ? currentOffset.dy -
-                      (topLeftPosition == null ? 0 : (topLeftPosition.dy))
-                  : selectPosition.dy,
+              left: isTap ? currentOffset.dx : selectPosition.dx,
+              top: isTap ? currentOffset.dy : selectPosition.dy,
               //这里减去80，是因为上下边距各40 所以需要减去还有半径
               child: Container(
                 width: widget.selectRadius,
@@ -98,24 +92,22 @@ class ColorPickState extends State<ColorRingPickView> {
         setState(() {
           isTap = true;
           _initLeftTop();
-            currentColor =
-                getColorAtPoint(e.globalPosition.dx, e.globalPosition.dy);
-            currentOffset = e.globalPosition;
-            if (widget.selectColorCallBack != null) {
-              widget.selectColorCallBack(currentColor);
-            }
+          currentColor =
+              getColorAtPoint(e.globalPosition.dx, e.globalPosition.dy);
+          if (widget.selectColorCallBack != null) {
+            widget.selectColorCallBack(currentColor);
+          }
         });
       },
       onPanUpdate: (e) {
         isTap = true;
         _initLeftTop();
         setState(() {
-            currentOffset = e.globalPosition;
-            currentColor =
-                getColorAtPoint(e.globalPosition.dx, e.globalPosition.dy);
-            if (widget.selectColorCallBack != null) {
-              widget.selectColorCallBack(currentColor);
-            }
+          currentColor =
+              getColorAtPoint(e.globalPosition.dx, e.globalPosition.dy);
+          if (widget.selectColorCallBack != null) {
+            widget.selectColorCallBack(currentColor);
+          }
         });
       },
     );
@@ -148,20 +140,28 @@ class ColorPickState extends State<ColorRingPickView> {
     print("setColor=$hsvColor");
     double r = hsvColor.saturation * radius;
     double radian = hsvColor.hue / -180.0 * pi;
+    currentOffset = new Offset(
+        radius +
+            widget.padding -
+            widget.ringWidth / 2 +
+            radius * cos(radian * pi / 180),
+        (radius - widget.padding - widget.ringWidth / 2) +
+            radius * sin(radian * pi / 180));
     _updateSelector(r * cos(radian), -r * sin(radian));
     currentColor = color;
   }
 
   void _updateSelector(double eventX, double eventY) {
     //更新选中颜色值
+
     double r = sqrt(eventX * eventX + eventY * eventY);
     double x = eventX, y = eventY;
     if (r > radius - widget.ringWidth && r < radius + widget.ringWidth) {
       x *= radius / r;
       y *= radius / r;
     }
-    selectPosition =
-        new Offset(x + radius + widget.padding, y + radius + widget.padding);
+    double radians = atan(eventX / eventY);
+    selectPosition = new Offset(radius * cos(radians), radius * sin(radians));
   }
 
   Color getColorAtPoint(double eventX, double eventY) {
@@ -170,7 +170,16 @@ class ColorPickState extends State<ColorRingPickView> {
     double y = eventY - (topLeftPosition.dy + radius + widget.padding);
     double r = sqrt(x * x + y * y);
     List<double> hsv = [0.0, 0.0, 1.0];
+    var angle = atan2(-y, -x);
     hsv[0] = (atan2(-y, -x) / pi * 180).toDouble() + 180;
+    currentOffset = new Offset(
+        topLeftPosition.dx +
+            radius +
+            widget.padding -
+            widget.ringWidth / 2 +
+            radius * cos(hsv[0] * pi / 180),
+        (topLeftPosition.dy + radius - widget.padding - widget.ringWidth / 2) +
+            radius * sin(hsv[0] * pi / 180));
     hsv[1] = max(0, min(1, (r / radius)));
     return HSVColor.fromAHSV(1.0, hsv[0], hsv[1], hsv[2]).toColor();
   }

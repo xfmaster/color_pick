@@ -59,27 +59,27 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Column(
-        children: <Widget>[
-          ColorPickView(
-            selectColorCallBack: (color) {
-              print(color);
-              setState(() {
-                currentColor = color;
-              });
-            },
-          ),
-          ColorRingPickView(
-            selectColor: Color(0xff0000ff),
-            size: Size(200, 200),
-          ),
-          Container(
-            color: currentColor,
-            height: 50,
-            width: 50,
-            child: SizedBox(),
-          )
-        ],
+      body:  Column(
+          children: <Widget>[
+//            ColorPickView(
+//              selectColorCallBack: (color) {
+//                print(color);
+//                setState(() {
+//                  currentColor = color;
+//                });
+//              },
+//            ),
+            ColorRingPickView(
+              selectColor: Color(0xffff00ff),
+              size: Size(250, 250),
+            ),
+            Container(
+              color: currentColor,
+              height: 50,
+              width: 50,
+              child: SizedBox(),
+            )
+          ],
       ),
     );
   }
