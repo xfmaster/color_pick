@@ -72,6 +72,12 @@ class _MyHomePageState extends State<MyHomePage> {
             ColorRingPickView(
               selectColor: Color(0xffff00ff),
               size: Size(250, 250),
+              selectColorCallBack: (color) {
+                print(color);
+                setState(() {
+                  currentColor = color;
+                });
+              },
             ),
             Container(
               color: currentColor,
