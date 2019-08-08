@@ -40,6 +40,16 @@ class ColorPickState extends State<ColorRingPickView> {
   bool isTap = false;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (widget.selectColor != null && selectPosition == null)
+      Future.delayed(Duration(milliseconds: 300)).then((val) {
+        _setColor(widget.selectColor);
+      });
+  }
+
+  @override
   Widget build(BuildContext context) {
     screenSize ??= MediaQuery.of(context).size;
     widget.size ??= screenSize;
@@ -52,9 +62,7 @@ class ColorPickState extends State<ColorRingPickView> {
             (widget.size != null && screenSize.width >= widget.size.width),
         '控件宽度太宽');
     radius = widget.size.width / 2 - widget.padding;
-    currentOffset ??= Offset(radius, radius);
-    if (widget.selectColor != null && selectPosition == null)
-      _setColor(widget.selectColor);
+    selectPosition = currentOffset ??= Offset(radius, radius);
     _initLeftTop();
     return GestureDetector(
       key: globalKey,
@@ -71,7 +79,6 @@ class ColorPickState extends State<ColorRingPickView> {
             Positioned(
               left: isTap ? currentOffset.dx : selectPosition.dx,
               top: isTap ? currentOffset.dy : selectPosition.dy,
-              //这里减去80，是因为上下边距各40 所以需要减去还有半径
               child: Container(
                 width: widget.selectRadius,
                 height: widget.selectRadius,
@@ -136,19 +143,20 @@ class ColorPickState extends State<ColorRingPickView> {
     print("setColor=$color");
     //设置颜色值
     var hsvColor = HSVColor.fromColor(color);
-
+    _initLeftTop();
     print("setColor=$hsvColor");
     double r = hsvColor.saturation * radius;
-    double radian = hsvColor.hue / -180.0 * pi;
-    currentOffset = new Offset(
-        radius +
-            widget.padding -
-            widget.ringWidth / 2 +
-            radius * cos(radian * pi / 180),
-        (radius - widget.padding - widget.ringWidth / 2) +
-            radius * sin(radian * pi / 180));
-    _updateSelector(r * cos(radian), -r * sin(radian));
-    currentColor = color;
+    double radian = hsvColor.hue / 180.0 * pi;
+    setState(() {
+      currentOffset = new Offset(  topLeftPosition.dx +
+          radius +
+          widget.padding -
+          widget.ringWidth / 2+ r * cos(radian),
+          (topLeftPosition.dy + radius - widget.padding - widget.ringWidth / 2)+ r * sin(radian));
+      currentColor = color;
+    });
+
+//    _updateSelector(r * cos(radian), -r * sin(radian));
   }
 
   void _updateSelector(double eventX, double eventY) {
@@ -161,7 +169,6 @@ class ColorPickState extends State<ColorRingPickView> {
       y *= radius / r;
     }
     double radians = atan(eventX / eventY);
-    selectPosition = new Offset(radius * cos(radians), radius * sin(radians));
   }
 
   Color getColorAtPoint(double eventX, double eventY) {

@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
 //              },
 //            ),
             ColorRingPickView(
-              selectColor: Color(0xffff00ff),
+              selectColor: Color(0xff00eaff),
               size: Size(250, 250),
               selectColorCallBack: (color) {
                 print(color);
