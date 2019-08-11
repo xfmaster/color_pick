@@ -9,6 +9,7 @@ class ColorPickView extends StatefulWidget {
   double selectRadius;
   double padding;
   Color selectColor;
+  Color selectRingColor;
   final SelectColor selectColorCallBack;
 
   ColorPickView(
@@ -16,6 +17,7 @@ class ColorPickView extends StatefulWidget {
       this.selectColorCallBack,
       this.selectRadius,
       this.padding,
+      this.selectRingColor,
       this.selectColor}) {
     assert(size == null || (size != null && size.height == size.width),
         '控件宽高必须相等');
@@ -43,8 +45,7 @@ class ColorPickState extends State<ColorPickView> {
     widget.size ??= screenSize;
     widget.selectRadius ??= 10;
     widget.padding ??= 40;
-    print("screenSize=$screenSize");
-    print(widget.size);
+    widget.selectRingColor ??= Colors.black;
     assert(
         widget.size == null ||
             (widget.size != null && screenSize.width >= widget.size.width),
@@ -69,19 +70,21 @@ class ColorPickState extends State<ColorPickView> {
             Positioned(
               left: isTap
                   ? currentOffset.dx -
-                      (topLeftPosition == null ? 0 : (topLeftPosition.dx))
-                  : (selectPosition == null ? radius : selectPosition.dx),
+                      (topLeftPosition == null ? 0 : (topLeftPosition.dx+widget.selectRadius/2))
+                  : (selectPosition == null ? radius : selectPosition.dx+widget.selectRadius/2),
               top: isTap
                   ? currentOffset.dy -
-                      (topLeftPosition == null ? 0 : (topLeftPosition.dy))
-                  : (selectPosition == null ? radius : selectPosition.dy),
+                      (topLeftPosition == null ? 0 : (topLeftPosition.dy+widget.selectRadius/2))
+                  : (selectPosition == null ? radius : selectPosition.dy+widget.selectRadius/2),
               //这里减去80，是因为上下边距各40 所以需要减去还有半径
               child: Container(
                 width: widget.selectRadius,
                 height: widget.selectRadius,
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(widget.selectRadius),
-                    border: Border.fromBorderSide(BorderSide())),
+                  borderRadius: BorderRadius.circular(widget.selectRadius),
+                  border: Border.fromBorderSide(
+                      BorderSide(color: widget.selectRingColor)),
+                ),
                 child: ClipOval(
                   child: Container(
                     color: currentColor,
@@ -125,35 +128,22 @@ class ColorPickState extends State<ColorPickView> {
 
   void _initLeftTop() {
     if (globalKey.currentContext != null && topLeftPosition == null) {
-      print("================");
       final RenderBox box = globalKey.currentContext.findRenderObject();
       topLeftPosition = box.localToGlobal(Offset.zero);
     }
   }
 
   bool isOutSide(double eventX, double eventY) {
-    double x = eventX -
-        (topLeftPosition.dx +
-            radius +
-            widget.padding -
-            widget.selectRadius / 2);
-    double y = eventY -
-        (topLeftPosition.dy +
-            radius +
-            widget.padding -
-            widget.selectRadius / 2);
+    double x = eventX - (topLeftPosition.dx + radius + widget.padding);
+    double y = eventY - (topLeftPosition.dy + radius + widget.padding);
     double r = sqrt(x * x + y * y);
-    print('r=$r--------------radius=$radius');
     if (r >= radius) return true;
     return false;
   }
 
   void _setColor(Color color) {
-    print("setColor=$color");
     //设置颜色值
     var hsvColor = HSVColor.fromColor(color);
-
-    print("setColor=$hsvColor");
     double r = hsvColor.saturation * radius;
     double radian = hsvColor.hue / -180.0 * pi;
     _updateSelector(r * cos(radian), -r * sin(radian));

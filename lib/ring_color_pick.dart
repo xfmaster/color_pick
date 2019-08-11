@@ -8,17 +8,19 @@ class ColorRingPickView extends StatefulWidget {
   Size size;
   double selectRadius;
   double padding;
-  final double ringWidth = 20;
+  double ringWidth;
+  Color selectRingColor;
   Color selectColor;
   final SelectColor selectColorCallBack;
 
-  ColorRingPickView({
-    this.size,
-    this.selectColorCallBack,
-    this.selectRadius,
-    this.padding,
-    this.selectColor,
-  }) {
+  ColorRingPickView(
+      {this.size,
+      this.selectColorCallBack,
+      this.selectRadius,
+      this.padding,
+      this.selectRingColor,
+      this.selectColor,
+      this.ringWidth}) {
     assert(size == null || (size != null && size.height == size.width),
         '控件宽高必须相等');
   }
@@ -36,6 +38,7 @@ class ColorPickState extends State<ColorRingPickView> {
   Offset topLeftPosition;
   Offset selectPosition;
   Size screenSize;
+  double centerX, centerY;
   GlobalKey globalKey = new GlobalKey();
   bool isTap = false;
 
@@ -55,8 +58,8 @@ class ColorPickState extends State<ColorRingPickView> {
     widget.size ??= screenSize;
     widget.selectRadius ??= 20;
     widget.padding ??= 40;
-    print("screenSize=$screenSize");
-    print(widget.size);
+    widget.ringWidth ??= 20;
+    widget.selectRingColor ??= Colors.white;
     assert(
         widget.size == null ||
             (widget.size != null && screenSize.width >= widget.size.width),
@@ -77,14 +80,27 @@ class ColorPickState extends State<ColorRingPickView> {
               size: widget.size,
             ),
             Positioned(
-              left: isTap ? currentOffset.dx : selectPosition.dx,
-              top: isTap ? currentOffset.dy : selectPosition.dy,
+              left: isTap
+                  ? currentOffset.dx -
+                      topLeftPosition.dx -
+                      widget.selectRadius / 2
+                  : selectPosition.dx -
+                      (topLeftPosition == null ? 0 : topLeftPosition.dx) -
+                      widget.selectRadius / 2,
+              top: isTap
+                  ? currentOffset.dy -
+                      topLeftPosition.dy -
+                      widget.selectRadius / 2
+                  : selectPosition.dy -
+                      (topLeftPosition == null ? 0 : topLeftPosition.dy) -
+                      widget.selectRadius / 2,
               child: Container(
                 width: widget.selectRadius,
                 height: widget.selectRadius,
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(widget.selectRadius),
-                    border: Border.fromBorderSide(BorderSide())),
+                    border: Border.fromBorderSide(
+                        BorderSide(color: widget.selectRingColor))),
                 child: ClipOval(
                   child: Container(
                     color: currentColor,
@@ -112,6 +128,7 @@ class ColorPickState extends State<ColorRingPickView> {
         setState(() {
           currentColor =
               getColorAtPoint(e.globalPosition.dx, e.globalPosition.dy);
+          print("$centerX-----------$centerY");
           if (widget.selectColorCallBack != null) {
             widget.selectColorCallBack(currentColor);
           }
@@ -122,71 +139,51 @@ class ColorPickState extends State<ColorRingPickView> {
 
   void _initLeftTop() {
     if (globalKey.currentContext != null && topLeftPosition == null) {
-      print("================");
       final RenderBox box = globalKey.currentContext.findRenderObject();
       topLeftPosition = box.localToGlobal(Offset.zero);
+      print(topLeftPosition.dx);
+      centerX = topLeftPosition.dx +
+          widget.padding / 2 +
+          widget.selectRadius / 2 +
+          radius;
+      centerY = topLeftPosition.dy +
+          widget.padding / 2 +
+          widget.selectRadius / 2 +
+          radius;
     }
   }
 
   bool isOutSide(double eventX, double eventY) {
-    double x = eventX -
-        (topLeftPosition.dx + radius + widget.padding - widget.ringWidth / 2);
-    double y = eventY -
-        (topLeftPosition.dy + radius + widget.padding - widget.ringWidth / 2);
+    double x = eventX - centerX;
+    double y = eventY - centerY;
     double r = sqrt(x * x + y * y);
-    print('r=$r--------------radius=$radius');
     if (r >= radius) return true;
     return false;
   }
 
   void _setColor(Color color) {
-    print("setColor=$color");
     //设置颜色值
     var hsvColor = HSVColor.fromColor(color);
     _initLeftTop();
-    print("setColor=$hsvColor");
     double r = hsvColor.saturation * radius;
     double radian = hsvColor.hue / 180.0 * pi;
     setState(() {
-      currentOffset = new Offset(  topLeftPosition.dx +
-          radius +
-          widget.padding -
-          widget.ringWidth / 2+ r * cos(radian),
-          (topLeftPosition.dy + radius - widget.padding - widget.ringWidth / 2)+ r * sin(radian));
+      currentOffset =
+          new Offset(centerX + r * cos(radian), centerY + r * sin(radian));
       currentColor = color;
     });
-
-//    _updateSelector(r * cos(radian), -r * sin(radian));
-  }
-
-  void _updateSelector(double eventX, double eventY) {
-    //更新选中颜色值
-
-    double r = sqrt(eventX * eventX + eventY * eventY);
-    double x = eventX, y = eventY;
-    if (r > radius - widget.ringWidth && r < radius + widget.ringWidth) {
-      x *= radius / r;
-      y *= radius / r;
-    }
-    double radians = atan(eventX / eventY);
   }
 
   Color getColorAtPoint(double eventX, double eventY) {
     //获取坐标在色盘中的颜色值
-    double x = eventX - (topLeftPosition.dx + radius + widget.padding);
-    double y = eventY - (topLeftPosition.dy + radius + widget.padding);
+    double x = eventX - centerX;
+    double y = eventY - centerY;
     double r = sqrt(x * x + y * y);
     List<double> hsv = [0.0, 0.0, 1.0];
-    var angle = atan2(-y, -x);
-    hsv[0] = (atan2(-y, -x) / pi * 180).toDouble() + 180;
-    currentOffset = new Offset(
-        topLeftPosition.dx +
-            radius +
-            widget.padding -
-            widget.ringWidth / 2 +
-            radius * cos(hsv[0] * pi / 180),
-        (topLeftPosition.dy + radius - widget.padding - widget.ringWidth / 2) +
-            radius * sin(hsv[0] * pi / 180));
+    var h = (atan2(-y, -x) / pi * 180).toDouble() + 180;
+    hsv[0] = h;
+    currentOffset = new Offset(centerX + radius * cos(h * pi / 180),
+        centerY + radius * sin(h * pi / 180));
     hsv[1] = max(0, min(1, (r / radius)));
     return HSVColor.fromAHSV(1.0, hsv[0], hsv[1], hsv[2]).toColor();
   }

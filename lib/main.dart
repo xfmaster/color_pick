@@ -1,6 +1,8 @@
 import 'package:color_pick/ring_color_pick.dart';
+import 'package:color_pick/ring_page.dart';
 import 'package:flutter/material.dart';
 
+import 'circle_page.dart';
 import 'color_pick.dart';
 
 void main() => runApp(MyApp());
@@ -38,8 +40,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Color currentColor = Color(0xff0000ff);
-
   @override
   void initState() {
     super.initState();
@@ -59,33 +59,24 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body:  Column(
-          children: <Widget>[
-//            ColorPickView(
-//              selectColorCallBack: (color) {
-//                print(color);
-//                setState(() {
-//                  currentColor = color;
-//                });
-//              },
-//            ),
-            ColorRingPickView(
-              selectColor: Color(0xff00eaff),
-              size: Size(250, 250),
-              selectColorCallBack: (color) {
-                print(color);
-                setState(() {
-                  currentColor = color;
-                });
-              },
-            ),
-            Container(
-              color: currentColor,
-              height: 50,
-              width: 50,
-              child: SizedBox(),
-            )
-          ],
+      body: Column(
+        children: <Widget>[
+          ListTile(
+            title: Text("色盘选择器"),
+            trailing: Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) => new CirclePage()));
+            },
+          ),
+          Divider(),
+          ListTile(
+            title: Text("色环选择器"),
+            trailing: Icon(Icons.arrow_forward_ios),
+            onTap: () {  Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => new RingPage()));},
+          ),
+        ],
       ),
     );
   }
