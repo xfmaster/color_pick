@@ -5,12 +5,12 @@ import 'dart:math';
 typedef SelectColor = Color Function(Color color);
 
 class ColorRingPickView extends StatefulWidget {
-  Size size;
-  double selectRadius;
-  double padding;
-  double ringWidth;
-  Color selectRingColor;
-  Color selectColor;
+  final Size size;
+  final double selectRadius;
+  final double padding;
+  final double ringWidth;
+  final Color selectRingColor;
+  final Color selectColor;
   final SelectColor selectColorCallBack;
 
   ColorRingPickView(
@@ -23,6 +23,8 @@ class ColorRingPickView extends StatefulWidget {
       this.ringWidth}) {
     assert(size == null || (size != null && size.height == size.width),
         '控件宽高必须相等');
+    assert(size == null || (size != null && size.height == size.width),
+        '控件宽高必须相等');
   }
 
   @override
@@ -33,10 +35,16 @@ class ColorRingPickView extends StatefulWidget {
 
 class ColorPickState extends State<ColorRingPickView> {
   double radius;
+  double selectRadius;
+  double padding;
+  double ringWidth;
   Color currentColor = Color(0xff00ff);
+  Color selectRingColor;
+
   Offset currentOffset;
   Offset topLeftPosition;
   Offset selectPosition;
+  Size size;
   Size screenSize;
   double centerX, centerY;
   GlobalKey globalKey = new GlobalKey();
@@ -44,7 +52,6 @@ class ColorPickState extends State<ColorRingPickView> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.selectColor != null && selectPosition == null)
       Future.delayed(Duration(milliseconds: 300)).then((val) {
@@ -55,52 +62,49 @@ class ColorPickState extends State<ColorRingPickView> {
   @override
   Widget build(BuildContext context) {
     screenSize ??= MediaQuery.of(context).size;
-    widget.size ??= screenSize;
-    widget.selectRadius ??= 20;
-    widget.padding ??= 40;
-    widget.ringWidth ??= 20;
-    widget.selectRingColor ??= Colors.white;
-    assert(
-        widget.size == null ||
-            (widget.size != null && screenSize.width >= widget.size.width),
-        '控件宽度太宽');
-    radius = widget.size.width / 2 - widget.padding;
+    size = (widget.size ?? screenSize);
+    selectRadius = (widget.selectRadius ?? 20);
+    padding = (widget.padding ?? 40);
+    ringWidth = (widget.ringWidth ?? 20);
+    selectRingColor = (widget.selectRingColor ?? Colors.white);
+    assert((size != null && screenSize.width >= size.width), '控件宽度太宽');
+    radius =size.width / 2 -padding;
     selectPosition = currentOffset ??= Offset(radius, radius);
     _initLeftTop();
     return GestureDetector(
       key: globalKey,
       child: Container(
-        width: widget.size.width,
-        height: widget.size.width,
+        width:size.width,
+        height:size.width,
         child: Stack(
           alignment: Alignment.center,
           children: <Widget>[
             CustomPaint(
-              painter: ColorPick(radius: radius, ringWidth: widget.ringWidth),
-              size: widget.size,
+              painter: ColorPick(radius: radius, ringWidth:ringWidth),
+              size:size,
             ),
             Positioned(
               left: isTap
                   ? currentOffset.dx -
                       topLeftPosition.dx -
-                      widget.selectRadius / 2
+                     selectRadius / 2
                   : selectPosition.dx -
                       (topLeftPosition == null ? 0 : topLeftPosition.dx) -
-                      widget.selectRadius / 2,
+                     selectRadius / 2,
               top: isTap
                   ? currentOffset.dy -
                       topLeftPosition.dy -
-                      widget.selectRadius / 2
+                     selectRadius / 2
                   : selectPosition.dy -
                       (topLeftPosition == null ? 0 : topLeftPosition.dy) -
-                      widget.selectRadius / 2,
+                     selectRadius / 2,
               child: Container(
-                width: widget.selectRadius,
-                height: widget.selectRadius,
+                width:selectRadius,
+                height:selectRadius,
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(widget.selectRadius),
                     border: Border.fromBorderSide(
-                        BorderSide(color: widget.selectRingColor))),
+                        BorderSide(color:selectRingColor))),
                 child: ClipOval(
                   child: Container(
                     color: currentColor,
@@ -143,12 +147,12 @@ class ColorPickState extends State<ColorRingPickView> {
       topLeftPosition = box.localToGlobal(Offset.zero);
       print(topLeftPosition.dx);
       centerX = topLeftPosition.dx +
-          widget.padding / 2 +
-          widget.selectRadius / 2 +
+         padding / 2 +
+         selectRadius / 2 +
           radius;
       centerY = topLeftPosition.dy +
-          widget.padding / 2 +
-          widget.selectRadius / 2 +
+         padding / 2 +
+         selectRadius / 2 +
           radius;
     }
   }
