@@ -143,7 +143,7 @@ class ColorPickState extends State<ColorRingPickView> {
   }
 
   void _initLeftTop() {
-    if (globalKey.currentContext != null && topLeftPosition == null) {
+    if (globalKey.currentContext != null ) {
       final RenderBox? box =
       globalKey.currentContext!.findRenderObject() as RenderBox?;
       topLeftPosition = box?.localToGlobal(Offset.zero);
