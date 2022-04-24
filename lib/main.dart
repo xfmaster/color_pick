@@ -1,13 +1,14 @@
-import 'package:color_pick/ring_color_pick.dart';
-import 'package:color_pick/ring_page.dart';
+import 'package:color_pick_view/ring_page.dart';
 import 'package:flutter/material.dart';
 
 import 'circle_page.dart';
 import 'color_pick.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -25,15 +26,15 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  const MyHomePage({Key? key, this.title}) : super(key: key);
 
-  final String title;
+  final String? title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -57,24 +58,24 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text(widget.title!),
       ),
       body: Column(
         children: <Widget>[
           ListTile(
-            title: Text("色盘选择器"),
-            trailing: Icon(Icons.arrow_forward_ios),
+            title: const Text("色盘选择器"),
+            trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (BuildContext context) => new CirclePage()));
             },
           ),
-          Divider(),
+          const Divider(),
           ListTile(
-            title: Text("色环选择器"),
-            trailing: Icon(Icons.arrow_forward_ios),
+            title: const Text("色环选择器"),
+            trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {  Navigator.of(context).push(MaterialPageRoute(
-                builder: (BuildContext context) => new RingPage()));},
+                builder: (BuildContext context) =>  RingPage()));},
           ),
         ],
       ),

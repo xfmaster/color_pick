@@ -1,7 +1,10 @@
-import 'package:color_pick/ring_color_pick.dart';
 import 'package:flutter/material.dart';
 
+import 'ring_color_pick.dart';
+
 class RingPage extends StatefulWidget {
+  const RingPage({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
@@ -10,7 +13,7 @@ class RingPage extends StatefulWidget {
 }
 
 class RingPageState extends State<RingPage> {
-  Color currentColor = Color(0xff0000ff);
+  Color currentColor = const Color(0xff0000ff);
 
   @override
   Widget build(BuildContext context) {
@@ -18,13 +21,13 @@ class RingPageState extends State<RingPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text("色环选择器"),
+        title: const Text("Color wheel selector"),
       ),
       body: Center(
           child: Column(
         children: <Widget>[
           ColorRingPickView(
-            selectColor: Color(0xff00eaff),
+            selectColor: const Color(0xff00eaff),
             selectRadius: 40,
             ringWidth: 30,
             selectRingColor: Colors.white,
@@ -38,7 +41,7 @@ class RingPageState extends State<RingPage> {
             color: currentColor,
             height: 50,
             width: 50,
-            child: SizedBox(),
+            child: const SizedBox(),
           )
         ],
       )),
